@@ -1,2 +1,3 @@
-# iot-infra
+# IoT infrastructure
+
 Internet of Things Infrastructure

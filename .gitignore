@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+emqx/data/*
+emqx/log/*
+
 # Distribution / packaging
 .Python
 build/

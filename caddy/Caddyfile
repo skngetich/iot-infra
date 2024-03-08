@@ -1,0 +1,22 @@
+:80 {
+    root * /usr/share/caddy/
+	file_server
+}
+
+## EMQX service
+# emqx.domain {
+#   root * /var/www/html/
+# 	file_server
+# 
+#   reverse_proxy emqx:18083
+# }
+
+
+## Keycloak service
+# keycloak.domain {
+#   root * /var/www/html/
+# 	file_server
+# 
+#   reverse_proxy keycloak:18083
+# }
+

@@ -1,18 +1,27 @@
 version: "3"
 
 services:
+  caddy:
+    image: caddy:2.7.6-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/default_index.html:/usr/share/caddy/index.html
+      - caddy_data:/data
+      - caddy_config:/config
   mqtt:
     image: emqx/emqx:5.5.0
     ports:
       - 1883:1883 # Default Port
-      - 8083:8083 
+      - 8083:8083
       - 8883:8883 # TLS Port
-      - 8084:8084 
+      - 8084:8084
       - 18083:18083 # http dashboard
     environment:
-      - "EMQX_NAME=emqx"
-      # - "EMQX_HOST=node1.emqx.io"
-      # - "EMQX_CLUSTER__DISCOVERY_STRATEGY=static"
+      EMQX_NAME: ${EMQX_NAME}
     healthcheck:
       test: ["CMD", "/opt/emqx/bin/emqx", "ctl", "status"]
       interval: 5s
@@ -22,3 +31,38 @@ services:
       - ./emqx/data:/opt/emqx/data # Data
       - ./emqx/log:/opt/emqx/log # Logs
       # - ./emqx/etc:/opt/emqx/etc:ro # Config
+  postgres:
+    image: postgres:${PG_VERSION}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+  keycloak:
+    image: quay.io/keycloak/keycloak:${KC_VERSION}
+    command: start-dev
+    environment:
+      KC_DB: ${KC_DB}
+      KC_DB_URL: ${KC_DB_URL}
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_HEALTH_ENABLED: ${KC_HEALTH_ENABLED}
+      DB_SCHEMA: ${DB_SCHEMA}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      PROXY_ADDRESS_FORWARDING: ${PROXY_ADDRESS_FORWARDING}
+      # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
+      #JDBC_PARAMS: "ssl=true"
+    ports:
+      - 127.0.0.1:8080:8080
+      - 465:465
+    depends_on:
+      - postgres
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
